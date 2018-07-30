@@ -25,43 +25,24 @@ std::string get_client_ip() {
 }
 
 //Server functions - refactor
-
-void write_to_client(const std::string &msg) {
-    tcp_socket.write_some(buffer(msg));
-}
-
 void write_handler(const boost::system::error_code &ec,
         size_t bytes_transferred ) {
     if (!ec){
-        //tcp_socket.write_some(buffer(msg));
+        nodes.push_back(data);
     }
 }
 
 void accept_handler(const boost::system::error_code &ec) {
     if (!ec){
-        //std::string say_hello = "hello " + get_client_ip();
-        //data = say_hello;
-        //async_write(tcp_socket, buffer(data), write_handler);
+        std::string msg_added_client = "added: " + get_client_ip() + "\n";
+        data = msg_added_client;
+
+        async_write(tcp_socket, buffer(data), write_handler);
     }
 }
-
-
-void add_node_to_list(const boost::system::error_code &ec) {
-    if(!ec) {
-        while(true) {
-            std::string msg_added_client = "added: " + get_client_ip() + "\n";
-            data = msg_added_client;
-
-            nodes.push_back(data);
-            write_to_client("hello from node server " + data);
-        }
-    }
-}
-
-
 
 int main() {
     tcp_acceptor_server.listen();
-    tcp_acceptor_server.async_accept(tcp_socket, add_node_to_list);
+    tcp_acceptor_server.async_accept(tcp_socket, accept_handler);
     io_service_server.run();
 }
